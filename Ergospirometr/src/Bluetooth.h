@@ -5,11 +5,13 @@
 #include <NimBLEDevice.h>
 #include <string>
 
-
+extern float sensorValue;
+extern float sensorValue2x;
 
 
 #define SERVICE_UUID        "baad0000-0000-0000-0000-00000000baad"
 #define SENSOR_VALUE_UUID   "f00d0000-0000-0000-0000-00000000f00d"
+#define SENSOR2_VALUE_UUID   "f00d0000-0000-0000-0000-00000000cdcd"
 #define REQUEST_UPDATE_UUID "c01d0000-0000-0000-0000-00000000c01d"
 #define CHAR_USER_DESC_UUID "2901"
 #define CHAR_FORMAT_UUID    "2904"
@@ -22,7 +24,8 @@ private:
     unsigned long lastUpdateTime;
 public:
     void bt_init();
-    void sendSensorValue(float ts_sensorValue);
+    void sendSensorValue(float ts_sensorValue, std::string uuid);
+    
     void setPeriod(int periodToSet){period=periodToSet;};
     void BTService ();
 

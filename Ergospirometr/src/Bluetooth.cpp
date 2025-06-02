@@ -77,6 +77,11 @@ void Bluetooth::bt_init()
         SENSOR_VALUE_UUID, NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY
     );
     pValueChar->setCallbacks(&chrCallbacks);
+
+        NimBLECharacteristic* pValueChar2 = pService->createCharacteristic(
+        SENSOR2_VALUE_UUID, NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY
+    );
+    pValueChar2->setCallbacks(&chrCallbacks);
     
     NimBLEDescriptor* pFormatDesc = pValueChar->createDescriptor(
         CHAR_FORMAT_UUID, NIMBLE_PROPERTY::READ
@@ -112,7 +117,8 @@ void Bluetooth::BTServiceWrapper(void* pvParameters) {
     pThis->BTService();  // Wywołanie metody na obiekcie
 }
 
-void Bluetooth::sendSensorValue(float ts_sensorValue) {
+
+void Bluetooth::sendSensorValue(float ts_sensorValue,std::string uuid) {
     uint8_t valueBytes[4];
     memcpy(valueBytes, &ts_sensorValue, sizeof(ts_sensorValue));
     Serial.printf("Updating sensor value: %f (bytes: %02X %02X %02X %02X)\r\n", 
@@ -121,7 +127,7 @@ void Bluetooth::sendSensorValue(float ts_sensorValue) {
     if (pServer) {
         NimBLEService* pSvc = pServer->getServiceByUUID(SERVICE_UUID);
         if (pSvc) {
-            NimBLECharacteristic* pChr = pSvc->getCharacteristic(SENSOR_VALUE_UUID);
+            NimBLECharacteristic* pChr = pSvc->getCharacteristic(uuid);
             if (pChr) {
                 pChr->setValue(valueBytes, sizeof(valueBytes));
                 pChr->notify();
@@ -141,17 +147,21 @@ void Bluetooth::BTService()
             if (period<10)
             return;
     
-            if (millis() - lastUpdateTime >= 1000) {
+            if (millis() - lastUpdateTime >= 20) {
                lastUpdateTime = millis();
-                sendSensorValue(sensorValue);
+                sendSensorValue(sensorValue,SENSOR_VALUE_UUID);
+                
+                sendSensorValue(sensorValue2x,SENSOR2_VALUE_UUID);
+                
             
             }
             
         }
         if (requestUpdate) {
             requestUpdate = false;
-            sendSensorValue(sensorValue);
+            sendSensorValue(sensorValue,SENSOR_VALUE_UUID);
+            sendSensorValue(sensorValue2x,SENSOR2_VALUE_UUID);
         }
-        vTaskDelay(30 / portTICK_PERIOD_MS);
+        vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }
