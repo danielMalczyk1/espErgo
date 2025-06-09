@@ -150,9 +150,7 @@ void Bluetooth::BTService()
             if (millis() - lastUpdateTime >= 20) {
                lastUpdateTime = millis();
                 sendSensorValue(sensorValue,SENSOR_VALUE_UUID);
-                
                 sendSensorValue(sensorValue2x,SENSOR2_VALUE_UUID);
-                
             
             }
             

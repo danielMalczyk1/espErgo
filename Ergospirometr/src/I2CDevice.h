@@ -41,6 +41,14 @@ public:
         return false;
     }
 
+    bool write16Bytes(uint8_t deviceAddress, uint16_t registerAddress, const uint8_t* data, size_t length) {
+    Wire.beginTransmission(deviceAddress);
+    Wire.write((registerAddress >> 8) & 0xFF);  // MSB
+    Wire.write(registerAddress & 0xFF);         // LSB
+    Wire.write(data, length);
+    return (Wire.endTransmission() == 0);
+}
+
     bool readBytes(uint8_t deviceAddress, uint8_t registerAddress, uint8_t *buffer, size_t length) {
         Wire.beginTransmission(deviceAddress);
         Wire.write(registerAddress);
@@ -56,6 +64,23 @@ public:
 
         return index == length;
     }
+
+    bool read16Bytes(uint8_t deviceAddress, uint16_t registerAddress, uint8_t *buffer, size_t length) {
+    Wire.beginTransmission(deviceAddress);
+    Wire.write((registerAddress >> 8) & 0xFF);  // MSB
+    Wire.write(registerAddress & 0xFF);         // LSB
+    if (Wire.endTransmission(false) != 0) {     // Restart condition
+        return false;
+    }
+
+    Wire.requestFrom(deviceAddress, (uint8_t)length);
+    size_t index = 0;
+    while (Wire.available() && index < length) {
+        buffer[index++] = Wire.read();
+    }
+
+    return index == length;
+}
 
 private:
     uint8_t _sda;
